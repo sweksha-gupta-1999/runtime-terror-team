@@ -183,3 +183,139 @@
     box-shadow: none !important;
   }
 }
+
+/* Enhanced print stylesheet for better PDF export */
+@page {
+  size: A4;
+  margin: 20mm;
+  orphans: 3;
+  widows: 3;
+}
+
+@media print {
+  /* Hide interactive elements */
+  button,
+  [role='button'],
+  .no-print {
+    display: none !important;
+  }
+
+  /* Better typography for print */
+  body {
+    font-size: 11pt;
+    line-height: 1.6;
+    width: 100%;
+  }
+
+  /* Page breaks and orphan/widow control */
+  h1, h2 {
+    page-break-after: avoid;
+    page-break-inside: avoid;
+    margin-top: 1.2em;
+  }
+
+  h3, h4, h5, h6 {
+    page-break-after: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Tab sections get their own area */
+  [role='tabpanel'] {
+    page-break-inside: avoid;
+    margin: 1.5em 0;
+  }
+
+  /* Better code block styling for print */
+  pre, code {
+    background: #f3f4f6 !important;
+    border: 1px solid #d1d5db !important;
+    page-break-inside: avoid;
+    padding: 0.5em;
+    font-size: 10pt;
+  }
+
+  /* List styling */
+  ul, ol {
+    page-break-inside: avoid;
+  }
+
+  li {
+    page-break-inside: avoid;
+    margin-bottom: 0.3em;
+  }
+
+  /* Table optimization */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    page-break-inside: avoid;
+  }
+
+  th, td {
+    border: 1px solid #d1d5db !important;
+    padding: 0.5em;
+    text-align: left;
+  }
+
+  th {
+    background: #f3f4f6 !important;
+    font-weight: 600;
+  }
+
+  /* Hide scrollbars and decorative elements */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* SVG optimization for print */
+  svg {
+    max-width: 100%;
+    page-break-inside: avoid;
+  }
+
+  /* Links should be visible with underlines */
+  a {
+    color: #4f46e5 !important;
+    text-decoration: underline;
+  }
+
+  /* Remove color gradients, use solid colors */
+  .text-gradient {
+    background: none !important;
+    color: #4f46e5 !important;
+    -webkit-text-fill-color: unset !important;
+  }
+
+  /* Badge styling for print */
+  .badge, [role='status'] {
+    border: 1px solid #d1d5db !important;
+    background: white !important;
+    color: #0f172a !important;
+    page-break-inside: avoid;
+  }
+
+  /* Progress bars visible in grayscale */
+  [role='progressbar'] {
+    background: #e5e7eb !important;
+    border: 1px solid #d1d5db !important;
+  }
+
+  /* Better spacing for readability */
+  p {
+    margin: 0.75em 0;
+    line-height: 1.5;
+  }
+
+  /* Main content area */
+  main {
+    width: 100%;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Remove animations and transitions */
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

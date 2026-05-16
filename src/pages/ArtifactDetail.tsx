@@ -141,7 +141,16 @@ export default function ArtifactDetail() {
 
   const exportPdf = () => {
     if (typeof window === 'undefined') return;
-    window.print();
+    // Set document title for PDF filename
+    const originalTitle = document.title;
+    document.title = `${repo?.name || 'Artifact'}-Onboarding.pdf`;
+    setTimeout(() => {
+      window.print();
+      // Restore original title after print dialog shows
+      setTimeout(() => {
+        document.title = originalTitle;
+      }, 100);
+    }, 100);
   };
 
   if (!repo) {
@@ -256,8 +265,8 @@ export default function ArtifactDetail() {
               <Button size="sm" onClick={() => navigate(`/learning/${repo.id}`)}>
                 <CheckSquare className="h-3.5 w-3.5" /> Open checklist
               </Button>
-              <Button size="sm" variant="outline" onClick={exportPdf}>
-                <Download className="h-3.5 w-3.5" /> Export
+              <Button size="sm" variant="outline" onClick={exportPdf} title="Export as PDF (Ctrl+P or Cmd+P)">
+                <Download className="h-3.5 w-3.5" /> Export as PDF
               </Button>
               {repo.source === 'github' && (
                 <Button size="sm" variant="ghost" onClick={refresh} loading={refreshing}>
