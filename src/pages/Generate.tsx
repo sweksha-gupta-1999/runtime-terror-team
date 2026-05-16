@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { type FormEvent, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -13,9 +13,11 @@ import {
   Github,
   Layers,
   Loader2,
+  Plus,
   Search,
   Sparkles,
   Wand2,
+  X,
 } from 'lucide-react';
 import { ONBOARDING_LEVELS, TECH_STACK_OPTIONS } from '@/constants';
 import type { OnboardingLevel, TechStack } from '@/types';
@@ -29,6 +31,7 @@ import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 import { GitHubError, parseGitHubUrl } from '@/utils/github';
 import { cn } from '@/utils/cn';
+import { normalizeStackLabel, sameStackLabel } from '@/utils/techStack';
 
 const STAGE_ICONS = [Github, Search, Database, FolderTree, FileText, Layers, Sparkles];
 const STAGE_LABELS = [
@@ -55,6 +58,8 @@ export default function Generate() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [stack, setStack] = useState<TechStack[]>([]);
+  const [customStack, setCustomStack] = useState('');
+  const [customStackError, setCustomStackError] = useState<string | null>(null);
   const [level, setLevel] = useState<OnboardingLevel>(defaultLevel);
   const [generating, setGenerating] = useState(false);
   const [progressStep, setProgressStep] = useState(0);
@@ -75,7 +80,33 @@ export default function Generate() {
   const canStep2 = mode === 'github' ? true : stack.length > 0;
 
   const toggleStack = (s: TechStack) =>
-    setStack((cur) => (cur.includes(s) ? cur.filter((x) => x !== s) : [...cur, s]));
+    setStack((cur) =>
+      cur.some((x) => sameStackLabel(x, s))
+        ? cur.filter((x) => !sameStackLabel(x, s))
+        : [...cur, s],
+    );
+
+  const removeStack = (s: TechStack) =>
+    setStack((cur) => cur.filter((x) => !sameStackLabel(x, s)));
+
+  const addCustomStack = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const label = normalizeStackLabel(customStack);
+    if (!label) {
+      setCustomStackError('Use 1-40 letters, numbers, spaces, or . # + / -');
+      return;
+    }
+
+    if (stack.some((s) => sameStackLabel(s, label))) {
+      setCustomStackError(`${label} is already selected.`);
+      return;
+    }
+
+    setStack((cur) => [...cur, label]);
+    setCustomStack('');
+    setCustomStackError(null);
+  };
 
   const startGenerate = async () => {
     setGenerating(true);
@@ -301,11 +332,11 @@ export default function Generate() {
               </div>
               <div className="flex flex-wrap gap-2">
                 {TECH_STACK_OPTIONS.map((s) => {
-                  const active = stack.includes(s as TechStack);
+                  const active = stack.some((x) => sameStackLabel(x, s));
                   return (
                     <button
                       key={s}
-                      onClick={() => toggleStack(s as TechStack)}
+                      onClick={() => toggleStack(s)}
                       className={cn(
                         'rounded-xl border px-3 py-1.5 text-sm font-medium transition',
                         active
@@ -318,6 +349,43 @@ export default function Generate() {
                   );
                 })}
               </div>
+
+              <form onSubmit={addCustomStack} className="mt-5 grid gap-2 sm:grid-cols-[1fr_auto] sm:items-start">
+                <Input
+                  label="Add custom stack"
+                  placeholder="Ruby, Laravel, .NET, Svelte"
+                  value={customStack}
+                  onChange={(e) => {
+                    setCustomStack(e.target.value);
+                    setCustomStackError(null);
+                  }}
+                  error={customStackError ?? undefined}
+                />
+                <Button type="submit" variant="outline" className="sm:mt-6">
+                  <Plus className="h-4 w-4" /> Add
+                </Button>
+              </form>
+
+              {stack.length > 0 && (
+                <div className="mt-5">
+                  <div className="mb-2 text-xs font-medium text-ink-500 dark:text-ink-400">
+                    Selected stack
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {stack.map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => removeStack(s)}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-brand-200 bg-brand-50 px-2.5 py-1 text-xs font-medium text-brand-700 transition hover:border-brand-300 hover:bg-brand-100 dark:border-brand-500/30 dark:bg-brand-500/10 dark:text-brand-300 dark:hover:bg-brand-500/20"
+                      >
+                        {s}
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </motion.div>
           )}
 

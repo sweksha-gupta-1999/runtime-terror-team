@@ -1,7 +1,7 @@
 // ----- Core domain types for the Repo Onboarding AI Assistant -----
 
 export type OnboardingLevel = 'Beginner' | 'Intermediate' | 'Advanced';
-export type TechStack =
+export type KnownTechStack =
   | 'React'
   | 'Next.js'
   | 'Node.js'
@@ -21,6 +21,7 @@ export type TechStack =
   | 'Redis'
   | 'Docker'
   | 'Kubernetes';
+export type TechStack = KnownTechStack | (string & Record<never, never>);
 
 export interface Repository {
   id: string;

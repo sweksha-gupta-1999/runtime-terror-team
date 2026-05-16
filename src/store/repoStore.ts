@@ -18,6 +18,7 @@ import {
   GitHubError,
   parseGitHubUrl,
 } from '@/utils/github';
+import { normalizeStackList } from '@/utils/techStack';
 import repositoriesSeed from '@/data/repositories.json';
 
 export interface FetchProgress {
@@ -96,6 +97,7 @@ export const useRepoStore = create<RepoState>((set, get) => ({
   },
 
   createRepoManual: ({ name, url, stack, description }) => {
+    const safeStack = normalizeStackList(stack);
     const repo: Repository = {
       id: uid('repo'),
       name,
@@ -106,8 +108,8 @@ export const useRepoStore = create<RepoState>((set, get) => ({
       stars: 0,
       forks: 0,
       contributors: 1,
-      language: stack[0] || 'TypeScript',
-      stack,
+      language: safeStack[0],
+      stack: safeStack,
       tags: ['manual'],
       lastUpdated: new Date().toISOString(),
       visibility: 'private',
