@@ -139,18 +139,58 @@ export default function ArtifactDetail() {
     return Math.round((done / learning.length) * 100);
   }, [learning, repoProgress]);
 
+  const sanitizeFileName = (value: string) => {
+    const safe = value
+      .trim()
+      .replace(/[^a-zA-Z0-9 \-_.]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^[._-]+|[._-]+$/g, '');
+
+    return safe || 'Artifact';
+  };
+
   const exportPdf = () => {
     if (typeof window === 'undefined') return;
-    // Set document title for PDF filename
+
     const originalTitle = document.title;
-    document.title = `${repo?.name || 'Artifact'}-Onboarding.pdf`;
+    const fileTitle = `${sanitizeFileName(repo?.name ?? 'Artifact')}-Onboarding.pdf`;
+
+    const restoreTitle = () => {
+      document.title = originalTitle;
+      window.removeEventListener('beforeprint', beforePrint);
+      window.removeEventListener('afterprint', afterPrint);
+      if (mediaQuery) {
+        mediaQuery.removeEventListener('change', mediaListener);
+      }
+    };
+
+    const beforePrint = () => {
+      document.title = fileTitle;
+    };
+
+    const afterPrint = () => {
+      restoreTitle();
+    };
+
+    const mediaQuery = window.matchMedia?.('print');
+    const mediaListener = (event: MediaQueryListEvent) => {
+      if (!event.matches) restoreTitle();
+    };
+
+    window.addEventListener('beforeprint', beforePrint);
+    window.addEventListener('afterprint', afterPrint);
+    if (mediaQuery && typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', mediaListener);
+    }
+
+    beforePrint();
+    window.print();
+
+    // Fallback restore if browser does not fire afterprint.
     setTimeout(() => {
-      window.print();
-      // Restore original title after print dialog shows
-      setTimeout(() => {
-        document.title = originalTitle;
-      }, 100);
-    }, 100);
+      if (document.title === fileTitle) restoreTitle();
+    }, 2000);
   };
 
   if (!repo) {
